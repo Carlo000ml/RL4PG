@@ -1,6 +1,6 @@
 # RL4PG - Reinforcement Learning for Power Grids
 
-This repository contains the code for the Master's thesis project **"Graph-Based Multi-Agent Reinforcement Learning for Power Grid Control"** developed by **Carlo Fabrizio** as part of the Master degree in Computer Science and Engineering at Politecnico di Milano.
+This repository contains the code for my Master's thesis project **"Graph-Based Multi-Agent Reinforcement Learning for Power Grid Control"** as part of the Master degree in Computer Science and Engineering at Politecnico di Milano.
 
 The goal of this project is to develop a **scalable and adaptive control framework** for electrical power grids using **Graph Neural Networks (GNNs)** and **Multi-Agent Reinforcement Learning (MARL)**, tested on the realistic simulation environment provided by **Grid2Op**.
 
