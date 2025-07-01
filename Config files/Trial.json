@@ -1,0 +1,135 @@
+{
+    "policy_kargs": 
+    { 
+        "epsilon" : 0.5 ,
+        "min_epsilon": 0.1 ,
+        "decay_mode": "half-life",
+        "half_life" : 75
+    },
+
+    "Q_value_estimator_kargs": 
+    { 
+        "lr":0.0001,
+        "weight_decay":5e-7,
+        "use_double": true,
+        "Q_estimator_params" :{
+                            "input_dim":246,
+                            "hidden_layers_shared_structure":[128],
+                            "structure_value_stream":[128],
+                            "structure_advantage_stream":[128,32],
+                            "dropout" : 0.1,
+                            "use_batch_norm":true
+                            },
+        "gamma": 0.999,
+        "Q_estimator_net_type":"Dueling",
+        "log_loss": true,
+        "gradient_clipping":3,
+        "soft_updates":true,
+        "tau_soft_updates":0.2
+    },
+
+
+    "agents_kargs":
+    {
+        "policy_type": "epsilon-greedy",
+        "start_training_capacity": 250,
+        "target_update_freq" : 300,   
+        "buffer_type": "prioritized",
+        "num_training_iters": 130,
+        "checkpoints": true,
+        "n training": 65,
+        "rew_shape":true
+    },
+
+    "MA_manager_kargs" : 
+    {
+        "rho_threshold": 1,
+        "Q_estimator_net_type": "Dueling",
+        "Q_estimator_params": {
+                        "input_dim":117,
+                        "hidden_layers_shared_structure":[128],
+                        "structure_value_stream":[128],
+                        "structure_advantage_stream":[128,32],
+                        "dropout" : 0.1,
+                        "use_batch_norm":true
+                        },
+        "lr": 1e-5,
+        "weight_decay": 5e-6,
+        "gradient_clipping":3,
+        "tau_soft_updates":0.1,
+        "soft_updates": true,
+        "use_double":true,
+        "gamma":0.99,
+        "policy_type": "epsilon-greedy",
+        "policy_kargs": {
+            "epsilon": 0.5,
+            "min_epsilon":0.1,
+            "half_life":75
+                       },
+        "replay_buffer_kargs": {
+            "capacity":50000
+        },
+        "buffer_type": "prioritized",
+        "start_training_capacity": 1000, 
+        "num_training_iters" : 150,
+        "batch_size": 64,
+        "device":"cpu",
+        "n demonstrations training":65,
+        "target_update_freq": 1000,
+        "lambda1":0.3,
+        "lambda2": 0.3,
+        "lambda3":0.2
+
+                        
+
+    },
+
+
+    "config": {
+
+        "environment": 
+        {
+            "name": "l2rpn_case14_sandbox",
+            "seed": 42
+        },
+
+        "hyperparameters": {
+            "textual description":"RL manager",
+            "learn demonstrations": true,
+            "number of episodes": 850,
+            "episodes for train": 10,
+            "exploit interval":200,
+            "exploit tests":50,
+            "validation": true,
+            "validation frequency":200,
+            "test": true,
+            "action type": "set",
+            "save folder": "Experimental_Results_2/",
+            "run name": "complete"
+
+
+            },
+
+        "device": "cpu"
+    },
+
+    "gp_kargs" :
+    { 
+        "input_dim" : 246 ,
+        "n_mp": 3 , 
+        "type": "GAT",
+        "dropout":0.1,
+        "batch_size":32 , 
+        "lr": 5e-5 ,
+        "weight_decay":1e-6 ,
+        "gradient_clipping":3 ,
+        "soft_updates":true , 
+        "tau_soft_updates":0.2
+    },
+
+    "replay_buffer_kargs":
+    {
+        "capacity":15000
+    }
+
+}
