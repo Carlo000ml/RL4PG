@@ -123,6 +123,6 @@ Make sure the specified config file exists and is properly configured.
 tensorboard --logdir=path_to_log_file
 ```
 
-Then open your browser at `http://localhost:6006/`. or whatever localhost number tensorboard is using
+Then open your browser at `http://localhost:6006/` or whatever localhost number tensorboard is using.
 
 ---
