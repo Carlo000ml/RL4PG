@@ -6,3 +6,4 @@ grid2op==1.10.5
 lightsim2grid==0.9.2
 tensorboard==2.18.0
 gym==0.23.0
+pandapower<3.0

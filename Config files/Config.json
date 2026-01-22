@@ -36,7 +36,7 @@
         "target_update_freq" : 300,   
         "buffer_type": "prioritized",
         "num_training_iters": 130,
-        "checkpoints": true,
+        "checkpoints": false,
         "n training": 65,
         "rew_shape":true
     },

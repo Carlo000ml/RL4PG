@@ -276,9 +276,7 @@ def main(settings):
     test_step=0
     do_nothing_step_test=0
 
-    #options={"time serie id": 0}
     options={}
-#    finish=False
 
     # Run episodes
     for episode in tqdm(range(hyperparameters["number of episodes"])):
@@ -293,7 +291,7 @@ def main(settings):
             exploit_step+=1              
 
         else:
- #           if finish: break
+ #
             train_res=train_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll , Env=GlobalEnv,options=options)
 
             agents_counter+=train_res["agents counter"]
@@ -338,7 +336,7 @@ def main(settings):
                     writer.add_scalar("Do action - VAL", val_res["Do action"], val_step)
                     val_results.append(val_res["survive time"])
                     val_step+=1   
- #               if np.mean(val_results)>6000: finish=True
+
                 
 
                 if not do_nothing_validation:

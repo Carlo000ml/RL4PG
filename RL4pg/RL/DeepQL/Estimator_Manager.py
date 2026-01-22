@@ -43,8 +43,10 @@ class Estimator_Manager:
         self.lambda1=lambda1
         self.lambda2=lambda2
         self.lambda3=lambda3
-        if eta is None:
-            self.eta=((1-gamma)/(1+gamma))/2
+        if eta:
+            self.eta=eta
+        else:
+            self.eta = ((1 - gamma) / (1 + gamma)) / 2
         
         # estimators
         assert Q_estimator_net_type in ["Dueling" , "Simple"]
