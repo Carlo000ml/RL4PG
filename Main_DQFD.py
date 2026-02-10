@@ -22,6 +22,10 @@ import argparse
 import pickle
 from grid2op.Episode import EpisodeData
 
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -74,6 +78,9 @@ def main(settings):
     gp_kargs=settings["gp_kargs"]
     
     replay_buffer_kargs=settings["replay_buffer_kargs"]
+
+    project_root= Path(os.getenv("PROJECT_ROOT"))
+    experiences_path=project_root / "ExpertExperiences"
 
 
 
@@ -193,17 +200,21 @@ def main(settings):
     agents_counter=[i for i in range(env_train.n_line)]
 
     if hyperparameters["learn demonstrations"]:
-    
+
         print(f">>> Starting Demonstrations learning")
 
         print(f">>> Checking if experiences' dataset already exists")
+        experiences_path_file=experiences_path / "Experiences.pkl"
+        MA_experiences_path_file=experiences_path / "MA_exp.pkl"
 
-        if os.path.exists('ExpertExperiences/Experiences.pkl') and os.path.exists('ExpertExperiences/MA_exp.pkl'):
+
+        
+        if experiences_path_file.exists() and MA_experiences_path_file.exists():
             print(f"Datasets already exist!")
                 # Load the dictionary back from the pickle file
-            with open('ExpertExperiences/Experiences.pkl', 'rb') as f:
+            with open(experiences_path_file, 'rb') as f:
                 experiences = pickle.load(f)
-            with open('ExpertExperiences/MA_exp.pkl', 'rb') as f:
+            with open(MA_experiences_path_file, 'rb') as f:
                 MA_exp = pickle.load(f)
         else:
             print(f"Dataset does not exixts... Creating the dataset...")
@@ -219,11 +230,11 @@ def main(settings):
                 experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_line_graph, experiences=experiences, MA_exp=MA_exp)
             
                     # Create the directory if it doesn't exist
-            os.makedirs("ExpertExperiences", exist_ok=True)
+            os.makedirs(experiences_path, exist_ok=True)
                     # Pickle (save) the dictionary to a file
-            with open('ExpertExperiences/Experiences.pkl', 'wb') as f:
+            with open(experiences_path_file, 'wb') as f:
                 pickle.dump(experiences, f)
-            with open('ExpertExperiences/MA_exp.pkl', 'wb') as f:
+            with open(MA_experiences_path_file, 'wb') as f:
                 pickle.dump(MA_exp, f)
 
         print(f">>> Storing demonstrations into agents")
