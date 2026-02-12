@@ -2,9 +2,9 @@ from RL4pg.RL.DeepQL.Agents import DQN_Agent
 from RL4pg.utils import *
 from RL4pg.RL.Trainers import *
 from RL4pg.RL.Environments import GlobalEnvironment
-from RL4pg.RL.Managers import MultiAgent_RL_Line_Manager
+from RL4pg.RL.Managers import MultiAgent_RL_Sub_Manager
 from RL4pg.Initialize_Env import initialize_env
-from RL4pg.RL.Converters import Reward_Converter_Line, Action_Converters
+from RL4pg.RL.Converters import  Action_Converters_sub
 from RL4pg.Graph_Processing.GP_Manager import GP_Manager
 import torch
 import random
@@ -168,18 +168,18 @@ def main(settings):
     MA_manager_kargs["runs_name"]=runs_folder
 
 
-    MultiAgent_Controll = MultiAgent_RL_Line_Manager(**MA_manager_kargs)
+    MultiAgent_Controll = MultiAgent_RL_Sub_Manager(**MA_manager_kargs)
 
-    GlobalEnv = GlobalEnvironment(env_train, build_graph=build_torch_line_graph, device=device)
-    GlobalEnv_val = GlobalEnvironment(env_val, build_graph=build_torch_line_graph, device=device)
-    GlobalEnv_test = GlobalEnvironment(env_test, build_graph=build_torch_line_graph, device=device)
+    GlobalEnv = GlobalEnvironment(env_train, build_graph=build_torch_sub_graph, device=device)
+    GlobalEnv_val = GlobalEnvironment(env_val, build_graph=build_torch_sub_graph, device=device)
+    GlobalEnv_test = GlobalEnvironment(env_test, build_graph=build_torch_sub_graph, device=device)
 
     gp_manager=GP_Manager(**gp_kargs)
 
 
-    Line_Agents = {
+    Sub_Agents = {
             i: DQN_Agent(
-                action_space=build_line_action_space(env_train,i, action_type=hyperparameters["action type"]),
+                action_space=build_sub_action_space(env_train,i, action_type=hyperparameters["action type"]),
                 agent_id=i,
                 runs_name=runs_folder,
                 policy_kargs=policy_kargs,
@@ -193,19 +193,19 @@ def main(settings):
                 rew_shape=agents_kargs["rew_shape"],
                 device=device
                 )
-             for i in range(init_obs.n_line)
+             for i in range(init_obs.n_sub)
          }
     
 
-    agents_counter=[i for i in range(env_train.n_line)]
+    agents_counter=[i for i in range(env_train.n_sub)]
 
     if hyperparameters["learn demonstrations"]:
 
         print(f">>> Starting Demonstrations learning")
 
         print(f">>> Checking if experiences' dataset already exists")
-        experiences_path_file=experiences_path / "Experiences.pkl"
-        MA_experiences_path_file=experiences_path / "MA_exp.pkl"
+        experiences_path_file=experiences_path / "Sub/Experiences.pkl"
+        MA_experiences_path_file=experiences_path / "Sub/MA_exp.pkl"
 
 
         
@@ -220,14 +220,14 @@ def main(settings):
             print(f"Dataset does not exixts... Creating the dataset...")
             episode_studied = EpisodeData.list_episode(config["environment"]["Expert interaction path"])  # To be configured later for better handling of the path
 
-            a_c={i:Action_Converters(env_train,i) for i in range(env_train.n_line)}
+            a_c={i:Action_Converters_sub(env_train,i) for i in range(env_train.n_sub)}
 
-            experiences={i: [] for i in range(env_train.n_line)}
+            experiences={i: [] for i in range(env_train.n_sub)}
             MA_exp=[]
             print(f">>> Collecting demonstrations of {agents_kargs['demonstrations n']} steps")
             for i in tqdm(range(len(episode_studied))):
                 this_episode = EpisodeData.from_disk(*episode_studied[i])
-                experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_line_graph, experiences=experiences, MA_exp=MA_exp)
+                experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager_sub(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_sub_graph, experiences=experiences, MA_exp=MA_exp)
             
                     # Create the directory if it doesn't exist
             os.makedirs(experiences_path, exist_ok=True)
@@ -238,9 +238,9 @@ def main(settings):
                 pickle.dump(MA_exp, f)
 
         print(f">>> Storing demonstrations into agents")
-        for i in range(env_train.n_line):
+        for i in range(env_train.n_sub):
             for e in experiences[i]:
-                Line_Agents[i].store_demonstration(e)
+                Sub_Agents[i].store_demonstration(e)
                 agents_counter.append(i)
 
         print(f">>> Storing demonstrations into manager")
@@ -261,16 +261,16 @@ def main(settings):
         print(f">>> Learning agents demonstrations for {130*agents_kargs['n training']} iterations")
         
         for k in range(agents_kargs["n training"]):
-            for i in range(env_train.n_line):
-                Line_Agents[i].learn_demonstrations()
+            for i in range(env_train.n_sub):
+                Sub_Agents[i].learn_demonstrations()
                 if  k % agents_kargs["target_update_freq"]==0:
                     if agents_kargs["checkpoints"]:
                         gp_manager.save_checkpoint(path=runs_folder)
                     gp_manager.sync_target()
-                    for j in range(env_train.n_line):
+                    for j in range(env_train.n_sub):
                         if agents_kargs["checkpoints"]:
-                            Line_Agents[j].save_estimator_checkpoint()
-                        Line_Agents[j].estimator_manager.sync_target()
+                            Sub_Agents[j].save_estimator_checkpoint()
+                        Sub_Agents[j].estimator_manager.sync_target()
     else: print(f"No demonstrations learning")
 
 
@@ -295,7 +295,7 @@ def main(settings):
 
         if episode%hyperparameters["exploit interval"] < hyperparameters["exploit tests"] and start_exploit:
 
-            exploit_res=exploit_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv,options=options)
+            exploit_res=exploit_episode(Agents=Sub_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv,options=options)
             writer.add_scalar("Cumulative L2RPN Reward - EXPLOIT", exploit_res["cum reward"], exploit_step)
             writer.add_scalar("survive time - EXPLOIT", exploit_res["survive time"], exploit_step)   
             writer.add_scalar("Do action - EXPLOIT", exploit_res["Do action"], exploit_step)
@@ -303,12 +303,12 @@ def main(settings):
 
         else:
  #
-            train_res=train_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll , Env=GlobalEnv,options=options)
+            train_res=train_episode(Agents=Sub_Agents,MA_Controller=MultiAgent_Controll , Env=GlobalEnv,options=options)
 
             agents_counter+=train_res["agents counter"]
             if np.any(np.unique(np.array(agents_counter), return_counts=True)[1]>agents_kargs["start_training_capacity"]): start_exploit=True   # start exploit only when the training has started
             else:start_exploit=False
-            writer.add_histogram("Buffer sizes", np.array(agents_counter), global_step=episode, bins=env_train.n_line)   
+            writer.add_histogram("Buffer sizes", np.array(agents_counter), global_step=episode, bins=env_train.n_sub)
             writer.add_scalar("Manager buffer size", len(MultiAgent_Controll.buffer), episode)             
 
             writer.add_scalar("Cumulative L2RPN Reward", train_res["cum reward"], episode)
@@ -316,8 +316,8 @@ def main(settings):
 
             if episode % hyperparameters["episodes for train"] == 0:
                 MultiAgent_Controll.learn()
-                for i in range(env_train.n_line):
-                    Line_Agents[i].learn()
+                for i in range(env_train.n_sub):
+                    Sub_Agents[i].learn()
 
             if episode % agents_kargs["target_update_freq"]==0:
                 if agents_kargs["checkpoints"]:
@@ -331,17 +331,17 @@ def main(settings):
 
 
 
-                for i in range(env_train.n_line):
+                for i in range(env_train.n_sub):
                     if agents_kargs["checkpoints"]:
-                        Line_Agents[i].save_estimator_checkpoint()
-                    Line_Agents[i].estimator_manager.sync_target()
+                        Sub_Agents[i].save_estimator_checkpoint()
+                    Sub_Agents[i].estimator_manager.sync_target()
 
 
         if hyperparameters["validation"]:
             if episode%hyperparameters["validation frequency"]==0:
                 val_results=[]
                 for chr_id in val_chr_ids:
-                    val_res=exploit_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_val,options={"time serie id": chr_id})
+                    val_res=exploit_episode(Agents=Sub_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_val,options={"time serie id": chr_id})
                     writer.add_scalar("Cumulative L2RPN Reward - VAL", val_res["cum reward"], val_step)
                     writer.add_scalar("Survive time - VAL", val_res["survive time"], val_step)   
                     writer.add_scalar("Do action - VAL", val_res["Do action"], val_step)
@@ -360,7 +360,7 @@ def main(settings):
 
         if hyperparameters["test"] and test:
                 for chr_id in test_chr_ids:
-                    test_res=exploit_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_test,options={"time serie id": chr_id})
+                    test_res=exploit_episode(Agents=Sub_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_test,options={"time serie id": chr_id})
                     writer.add_scalar("Cumulative L2RPN Reward - TEST", test_res["cum reward"], test_step)
                     writer.add_scalar("Survive time - TEST", test_res["survive time"], test_step)   
                     writer.add_scalar("Do action - TEST", test_res["Do action"], test_step)
@@ -379,18 +379,18 @@ def main(settings):
 
     if hyperparameters["test"]:
         for chr_id in test_chr_ids:
-            test_res=exploit_episode(Agents=Line_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_test,options={"time serie id": chr_id})
+            test_res=exploit_episode(Agents=Sub_Agents,MA_Controller=MultiAgent_Controll, Env=GlobalEnv_test,options={"time serie id": chr_id})
             writer.add_scalar("Cumulative L2RPN Reward - TEST", test_res["cum reward"], test_step)
             writer.add_scalar("Survive time - TEST", test_res["survive time"], test_step)   
             writer.add_scalar("Do action - TEST", test_res["Do action"], test_step)
             test_step+=1   
         
 
-    for i in range(init_obs.n_line):
-        Line_Agents[i].close_writer()
+    for i in range(init_obs.n_sub):
+        Sub_Agents[i].close_writer()
 
-    for i in range(init_obs.n_line):
-        Line_Agents[i].save()
+    for i in range(init_obs.n_sub):
+        Sub_Agents[i].save()
 
     MultiAgent_Controll.save_checkpoint()
     with open(runs_folder+"/Manager/buffer", 'wb') as f:

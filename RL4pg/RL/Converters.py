@@ -1,5 +1,5 @@
 import numpy as np
-from ..utils import build_line_action_space,build_line_extremities_sub_indexes
+from ..utils import build_line_action_space,build_line_extremities_sub_indexes, build_sub_action_space
 import torch
 from ..DeepL.Models import CustomRegressor
 
@@ -96,6 +96,20 @@ class Action_Converters:
         action_space=build_line_action_space(env,line_id=line_id)
         self.action_space=[a.as_dict() for a in action_space]
         self.line_extremities=build_line_extremities_sub_indexes(env)[line_id]
+
+
+
+    def grid2op_to_torch(self,action):
+        ac=action.as_dict()
+        return torch.tensor(self.action_space.index(ac), dtype=torch.long)
+
+
+
+class Action_Converters_sub:
+    def __init__(self,env, sub_id):
+        self.sub_id=sub_id
+        action_space=build_sub_action_space(env,sub_id=sub_id)
+        self.action_space=[a.as_dict() for a in action_space]
 
 
 

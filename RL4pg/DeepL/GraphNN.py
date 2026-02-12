@@ -49,7 +49,7 @@ class Graph_processor_sub(torch.nn.Module):
         Graph Processor module. Manages the Graph processing of a graph or of a batch of graphs, here we assume the message passing does not change the shape of the input
         """
 
-        super(Graph_processor_lines, self).__init__()
+        super(Graph_processor_sub, self).__init__()
         assert type in ["GCN", "GAT", "GraphSAGE", "GIN"]
         self.gcn = CustomGNN(type=type, in_channels=input_dim, hidden_channels=input_dim, out_channels=input_dim,
                              num_layers=n_mp, dropout=dropout, activation=activation).to(device)
@@ -67,7 +67,7 @@ class Graph_processor_sub(torch.nn.Module):
 
         gcn_out = self.gcn(x, edge_index)  # n_nodes * batch_size
 
-        return gcn_out.view(self.batch_size, self.n_line, self.input_dim).permute(1, 0, 2)
+        return gcn_out.view(self.batch_size, self.n_sub, self.input_dim).permute(1, 0, 2)
 
     def process_multigraph(self, multigraph):
         # number of graphs
@@ -77,7 +77,7 @@ class Graph_processor_sub(torch.nn.Module):
         gcn_out = self.gcn(multigraph.x, multigraph.edge_index)
 
         # reshape it to return the shape (number_of_graphs , n_lines, input_dim)
-        return gcn_out.view(nb, self.n_line, self.input_dim)
+        return gcn_out.view(nb, self.n_sub, self.input_dim)
 
     
 

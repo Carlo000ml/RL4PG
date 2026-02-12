@@ -243,11 +243,20 @@ def build_torch_line_graph(obs, multigraph=False, device='cpu'):
     return Data(x=x, edge_index=edge_index)
 
 
+def build_torch_sub_graph(obs, device='cpu'):
+    x=substation_vectors(obs, device=device)
+    edge_index=sub_connectivity(obs, as_dict=False).to(device)
+    return Data(x=x, edge_index=edge_index)
+
 
 
 def build_line_extremities_sub_indexes(obs):
     
     return torch.tensor(np.vstack([obs.line_or_to_subid, obs.line_ex_to_subid]) , dtype=torch.long ).t().contiguous()
+
+
+def build_sub_action_space(env, sub_id, action_type="set"):
+    return env.action_space.get_all_unitary_topologies_set(env.action_space, sub_id=sub_id,add_alone_line=False)
 
 
 
@@ -466,7 +475,7 @@ def collect_n_step_expert_experiences_RL_Manager(episode,n,action_converters,bui
                     if agent_reward==1:
                             done_t=1
                     rewards.append(agent_reward)
-                    
+
                     # following steps
                     for i in range(2,n):
                         next_obs=episode.observations[time_step+i]
@@ -479,4 +488,53 @@ def collect_n_step_expert_experiences_RL_Manager(episode,n,action_converters,bui
 
                     experiences[ag].append((graph, agent_action.item(), torch.tensor(rewards), done_t, next_graph, next_n_graph, done_t_n))
                     MA_exp.append((state,ag,torch.tensor(rewards),next_state,done_t,next_n_state, done_t_n))
+    return experiences, MA_exp
+
+
+def collect_n_step_expert_experiences_RL_Manager_sub(episode, n, action_converters, build_graph,
+                                                 experiences={i: [] for i in range(20)}, MA_exp=[], device="cpu"):
+    # iterate over all the time steps
+    for time_step in range(len(episode.actions) - n):
+        # action performed a_t
+        action = episode.actions[time_step]
+        # if it is not a do nothing action AND it is not a line reconnection/disconnection
+        if not action.as_dict() == {} and np.all(action.set_line_status == 0):
+            rewards=[]
+            # obs t
+            obs = episode.observations[time_step]
+            graph = build_graph(obs, device=device)
+            state = obs_to_torch(obs, device=device)
+
+            # sub id on which the action has been performed
+            # print(time_step)
+            sub_id = int(action.as_dict()["set_bus_vect"]["modif_subs_id"][0])
+            if action.as_dict() in action_converters[sub_id].action_space:
+                agent_action = action_converters[sub_id].grid2op_to_torch(action)
+
+            next_obs = episode.observations[time_step + 1]
+            next_graph = build_graph(next_obs, device=device)
+            next_state = obs_to_torch(next_obs, device=device)
+            next_n_graph = next_graph
+            next_n_state = next_state
+            agent_reward = np.average((np.maximum(1 - next_obs.rho, 0)) ** 2)
+            rewards.append(agent_reward)
+            if agent_reward == 1:
+                done_t = 1
+
+            # next steps
+            for i in range(2, n):
+                next_obs = episode.observations[time_step + i]
+                next_n_graph = build_graph(next_obs, device=device)
+                next_n_state = obs_to_torch(next_obs, device=device)
+                agent_next_reward = np.average(
+                    (np.maximum(1 - next_obs.rho, 0)) ** 2)  # starting from reward t+1  until reward t+n-1
+                rewards.append(agent_next_reward)
+                if agent_next_reward == 1:
+                    done_t_n = 1
+
+            experiences[sub_id].append(
+                (graph, agent_action.item(), torch.tensor(rewards), done_t, next_graph, next_n_graph, done_t_n))
+            MA_exp.append((state, sub_id, torch.tensor(rewards), next_state, done_t, next_n_state, done_t_n))
+
+
     return experiences, MA_exp

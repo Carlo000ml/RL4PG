@@ -1,4 +1,4 @@
-from ..DeepL.GraphNN import Graph_processor_lines # type: ignore
+from ..DeepL.GraphNN import Graph_processor_lines, Graph_processor_sub # type: ignore
 import torch
 
 class GP_Manager:

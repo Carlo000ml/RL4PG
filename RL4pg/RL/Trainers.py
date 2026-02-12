@@ -22,9 +22,9 @@ def exploit_episode(Agents, MA_Controller, Env, options={} ):
                 (next_obs, next_graph), reward, done, info = Env.step(action)
             else:
                 # select the agent
-                line_id = MA_Controller.exploit_agent(obs)
+                sub_id = MA_Controller.exploit_agent(obs)
                 # action
-                action = Agents[line_id].exploit(graph, current_obs=obs)
+                action = Agents[sub_id].exploit(graph, current_obs=obs)
                 if not action.as_dict() == do_n_action:
                     do_action+=1
                 (next_obs, next_graph), reward, done, info = Env.step(action)
@@ -42,7 +42,7 @@ def exploit_episode(Agents, MA_Controller, Env, options={} ):
 
 def train_episode(Agents, MA_Controller, Env, reward_decomposer=True, options={}):
     obs,graph = Env.reset(options=options)
-    n_line=obs.n_line
+    n_sub=obs.n_sub
 
     done = False
     ep_len = 0
@@ -61,15 +61,15 @@ def train_episode(Agents, MA_Controller, Env, reward_decomposer=True, options={}
                 action = MA_Controller.reconnect_line(obs)
                 (next_obs, next_graph), reward, done, info = Env.step(action)
             else:
-                line_id,_ = MA_Controller.play_agent(obs)
-                action, exploration = Agents[line_id].act(graph, current_obs=obs)
+                sub_id,_ = MA_Controller.play_agent(obs)
+                action, exploration = Agents[sub_id].act(graph, current_obs=obs)
                 (next_obs, next_graph), reward, done, info = Env.step(action)
                 line_rew=np.average(   (   np.maximum(1-next_obs.rho,  0)   )**2   ) if not done else -1  # -1 only if done
-                Agents[line_id].store_experience((graph, Agents[line_id].grid2op_to_torch(action), line_rew, next_graph, done))
+                Agents[sub_id].store_experience((graph, Agents[sub_id].grid2op_to_torch(action), line_rew, next_graph, done))
 
                 if not exploration:
-                    MA_Controller.store_experience(experience=(MA_Controller.obs_to_torch(obs) , line_id , line_rew, MA_Controller.obs_to_torch(next_obs), done))
-                agents_counter.append(line_id)
+                    MA_Controller.store_experience(experience=(MA_Controller.obs_to_torch(obs) , sub_id , line_rew, MA_Controller.obs_to_torch(next_obs), done))
+                agents_counter.append(sub_id)
 
         cum_rew += np.average(   (   np.maximum(1-next_obs.rho,  0)   )**2   ) if not done else -1
         ep_len += 1
