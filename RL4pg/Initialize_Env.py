@@ -15,7 +15,7 @@ def initialize_env(env_name):
         None
     """
     # Construct paths for the environments
-    base_path = "C:\\Users\\carlo\\data_grid2op\\"+env_name   # os.path.join(os.getcwd(),"data_grid2op", env_name)
+    base_path = "/srv/mlg/home/cfab0002/data_grid2op/"+env_name   # os.path.join(os.getcwd(),"data_grid2op", env_name)
     print("the base path is - " , base_path , " - in case it is not the location of data_grid2op, change the file 'Initialize_Env.py' when computing the base_path " )
     train_env_path = base_path + "_train"
     val_env_path = base_path + "_val"
