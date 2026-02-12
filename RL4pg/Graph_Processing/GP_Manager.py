@@ -2,7 +2,7 @@ from ..DeepL.GraphNN import Graph_processor_lines # type: ignore
 import torch
 
 class GP_Manager:
-    def __init__(self, grid2openv, input_dim , n_mp, type ,dropout, batch_size, lr, weight_decay, gradient_clipping, soft_updates, tau_soft_updates=None,  device="cpu"):
+    def __init__(self, grid2openv, input_dim , n_mp, type ,dropout, batch_size, lr, weight_decay, gradient_clipping, soft_updates, tau_soft_updates=None,  device="cpu", lines=False):
             #self.grid2openv=grid2openv  otherwise it become unpickable and other measures are requires
             self.input_dim=input_dim
             self.n_mp=n_mp
@@ -17,8 +17,13 @@ class GP_Manager:
             self.tau_soft_updates=tau_soft_updates
              
             # graph processors
-            self.main_gp=Graph_processor_lines(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type , dropout=dropout,batch_size=batch_size,device=device)
-            self.target_gp=Graph_processor_lines(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type,dropout=dropout,batch_size=batch_size,device=device)
+            if lines:
+                self.main_gp=Graph_processor_lines(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type , dropout=dropout,batch_size=batch_size,device=device)
+                self.target_gp=Graph_processor_lines(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type,dropout=dropout,batch_size=batch_size,device=device)
+            else:
+                self.main_gp=Graph_processor_sub(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type , dropout=dropout,batch_size=batch_size,device=device)
+                self.target_gp=Graph_processor_sub(environment=grid2openv,input_dim=input_dim,n_mp=n_mp,type=type,dropout=dropout,batch_size=batch_size,device=device)
+
 
             self.target_gp.load_state_dict(self.main_gp.state_dict())
             self.target_gp.eval()
