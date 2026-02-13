@@ -102,7 +102,7 @@
             "number of episodes": 850,
             "episodes for train": 10,
             "exploit interval":200,
-            "exploit tests":50,
+            "exploit tests":10,
             "validation": true,
             "validation frequency":200,
             "test": true,
