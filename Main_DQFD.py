@@ -22,7 +22,7 @@ import argparse
 import pickle
 from grid2op.Episode import EpisodeData
 
-from pathlib import Path
+import pathlib
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -79,7 +79,7 @@ def main(settings):
     
     replay_buffer_kargs=settings["replay_buffer_kargs"]
 
-    project_root= Path(os.getenv("PROJECT_ROOT"))
+    project_root= pathlib.Path(os.getenv("PROJECT_ROOT"))
     experiences_path=project_root / "ExpertExperiences"
 
 
@@ -204,7 +204,7 @@ def main(settings):
         print(f">>> Starting Demonstrations learning")
 
         print(f">>> Checking if experiences' dataset already exists")
-        experiences_path_file=experiences_path / "Sub/Experiences.pkl"
+        experiences_path_file=experiences_path  /"Sub/Experiences.pkl"
         MA_experiences_path_file=experiences_path / "Sub/MA_exp.pkl"
 
 
@@ -230,8 +230,11 @@ def main(settings):
                 experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager_sub(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_sub_graph, experiences=experiences, MA_exp=MA_exp)
             
                     # Create the directory if it doesn't exist
-            os.makedirs(experiences_path, exist_ok=True)
-                    # Pickle (save) the dictionary to a file
+
+            pathlib.Path(experiences_path_file).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(MA_experiences_path_file).parent.mkdir(parents=True, exist_ok=True)
+
+            # Pickle (save) the dictionary to a file
             with open(experiences_path_file, 'wb') as f:
                 pickle.dump(experiences, f)
             with open(MA_experiences_path_file, 'wb') as f:

@@ -272,8 +272,8 @@ class MultiAgent_RL_Line_Manager:
             self.demonstration_training_iter=0
 
             # writer
-            self.path=runs_name+"/"+"Manager"
-            self.writer = SummaryWriter(log_dir=self.path)
+            self.ma_path=runs_name+"/"+"Manager"
+            self.writer = SummaryWriter(log_dir=self.ma_path)
 
 
 
@@ -513,11 +513,11 @@ class MultiAgent_RL_Line_Manager:
         'main_net_state_dict': self.main_net.state_dict(),
         'target_net_state_dict': self.target_net.state_dict(),
         'optimizer_state_dict': self.optimizer.state_dict(),
-        }, self.path+"/checkpoint.pth")
+        }, self.ma_path+"/checkpoint.pth")
 
 
     def load_checkpoint(self):
-        checkpoint = torch.load(self.path+"/checkpoint.pth")
+        checkpoint = torch.load(self.ma_path+"/checkpoint.pth")
         self.main_net.load_state_dict(checkpoint["main_net_state_dict"])
         self.target_net.load_state_dict(checkpoint["target_net_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -716,8 +716,8 @@ class MultiAgent_RL_Sub_Manager:
         self.demonstration_training_iter = 0
 
         # writer
-        self.path = runs_name + "/" + "Manager"
-        self.writer = SummaryWriter(log_dir=self.path)
+        self.ma_path = runs_name + "/" + "Manager"
+        self.writer = SummaryWriter(log_dir=self.ma_path)
 
     def safe(self, obs, threshold=None):
         """
@@ -946,10 +946,10 @@ class MultiAgent_RL_Sub_Manager:
             'main_net_state_dict': self.main_net.state_dict(),
             'target_net_state_dict': self.target_net.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
-        }, self.path + "/checkpoint.pth")
+        }, self.ma_path + "/checkpoint.pth")
 
     def load_checkpoint(self):
-        checkpoint = torch.load(self.path + "/checkpoint.pth")
+        checkpoint = torch.load(self.ma_path + "/checkpoint.pth")
         self.main_net.load_state_dict(checkpoint["main_net_state_dict"])
         self.target_net.load_state_dict(checkpoint["target_net_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
