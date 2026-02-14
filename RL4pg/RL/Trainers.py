@@ -68,7 +68,7 @@ def train_episode(Agents, MA_Controller, Env, reward_decomposer=True, options={}
                 Agents[sub_id].store_experience((graph, Agents[sub_id].grid2op_to_torch(action), line_rew, next_graph, done))
 
                 if not exploration:
-                    MA_Controller.store_experience(experience=(MA_Controller.obs_to_torch(obs) , sub_id , line_rew, MA_Controller.obs_to_torch(next_obs), done))
+                    MA_Controller.store_experience(experience=(MA_Controller.obs_to_torch(obs) , MA_Controller.playable.index(sub_id) , line_rew, MA_Controller.obs_to_torch(next_obs), done))
                 agents_counter.append(sub_id)
 
         cum_rew += np.average(   (   np.maximum(1-next_obs.rho,  0)   )**2   ) if not done else -1

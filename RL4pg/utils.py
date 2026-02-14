@@ -491,7 +491,7 @@ def collect_n_step_expert_experiences_RL_Manager(episode,n,action_converters,bui
     return experiences, MA_exp
 
 
-def collect_n_step_expert_experiences_RL_Manager_sub(episode, n, action_converters, build_graph,
+def collect_n_step_expert_experiences_RL_Manager_sub(episode, n, action_converters, build_graph,playable_subs,
                                                  experiences={i: [] for i in range(20)}, MA_exp=[], device="cpu"):
     # iterate over all the time steps
     for time_step in range(len(episode.actions) - n):
@@ -508,34 +508,56 @@ def collect_n_step_expert_experiences_RL_Manager_sub(episode, n, action_converte
             # sub id on which the action has been performed
             # print(time_step)
             sub_id = int(action.as_dict()["set_bus_vect"]["modif_subs_id"][0])
-            done_t = 0
-            done_t_n = 0
-            if action.as_dict() in action_converters[sub_id].action_space:
-                agent_action = action_converters[sub_id].grid2op_to_torch(action)
-                next_obs = episode.observations[time_step + 1]
-                next_graph = build_graph(next_obs, device=device)
-                next_state = obs_to_torch(next_obs, device=device)
-                next_n_graph = next_graph
-                next_n_state = next_state
-                agent_reward = np.average((np.maximum(1 - next_obs.rho, 0)) ** 2)
-                rewards.append(agent_reward)
-                if agent_reward == 1:
-                    done_t = 1
+            if sub_id in playable_subs:
+                done_t = 0
+                done_t_n = 0
+                if action.as_dict() in action_converters[sub_id].action_space:
+                    agent_action = action_converters[sub_id].grid2op_to_torch(action)
+                    next_obs = episode.observations[time_step + 1]
+                    next_graph = build_graph(next_obs, device=device)
+                    next_state = obs_to_torch(next_obs, device=device)
+                    next_n_graph = next_graph
+                    next_n_state = next_state
+                    agent_reward = np.average((np.maximum(1 - next_obs.rho, 0)) ** 2)
+                    rewards.append(agent_reward)
+                    if agent_reward == 1:
+                        done_t = 1
 
-                # next steps
-                for i in range(2, n):
-                    next_obs = episode.observations[time_step + i]
-                    next_n_graph = build_graph(next_obs, device=device)
-                    next_n_state = obs_to_torch(next_obs, device=device)
-                    agent_next_reward = np.average(
-                        (np.maximum(1 - next_obs.rho, 0)) ** 2)  # starting from reward t+1  until reward t+n-1
-                    rewards.append(agent_next_reward)
-                    if agent_next_reward == 1:
-                        done_t_n = 1
+                    # next steps
+                    for i in range(2, n):
+                        next_obs = episode.observations[time_step + i]
+                        next_n_graph = build_graph(next_obs, device=device)
+                        next_n_state = obs_to_torch(next_obs, device=device)
+                        agent_next_reward = np.average(
+                            (np.maximum(1 - next_obs.rho, 0)) ** 2)  # starting from reward t+1  until reward t+n-1
+                        rewards.append(agent_next_reward)
+                        if agent_next_reward == 1:
+                            done_t_n = 1
 
-                experiences[sub_id].append(
-                    (graph, agent_action.item(), torch.tensor(rewards), done_t, next_graph, next_n_graph, done_t_n))
-                MA_exp.append((state, sub_id, torch.tensor(rewards), next_state, done_t, next_n_state, done_t_n))
+                    experiences[sub_id].append(
+                        (graph, agent_action.item(), torch.tensor(rewards), done_t, next_graph, next_n_graph, done_t_n))
+                    MA_exp.append((state, sub_id, torch.tensor(rewards), next_state, done_t, next_n_state, done_t_n))
 
 
     return experiences, MA_exp
+
+
+def check_at_least_two_lines(action, sub_id):
+    bus_connection=np.array(action.as_serializable_dict()['set_bus']['lines_or_id']+action.as_serializable_dict()['set_bus']['lines_ex_id'])[:,1]
+
+    return np.sum(bus_connection==1)>=2 or np.sum(bus_connection==2)>=2
+
+
+
+def N_1_secure_action_space(env, sub_id):
+    sub_id_action_space = env.action_space.get_all_unitary_topologies_set(env.action_space, sub_id=sub_id,
+                                                                      add_alone_line=False)
+    N_1_secure_a_s = []
+    for action in sub_id_action_space:
+        if check_at_least_two_lines(action, sub_id):
+            N_1_secure_a_s.append(action)
+
+    if len(N_1_secure_a_s) == 1: return []
+    return N_1_secure_a_s
+
+

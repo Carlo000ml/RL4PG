@@ -76,7 +76,7 @@
         "num_training_iters" : 150,
         "batch_size": 64,
         "device":"cpu",
-        "n demonstrations training":65,
+        "n demonstrations training":20,
         "target_update_freq": 1000,
         "lambda1":0.3,
         "lambda2": 0.3,

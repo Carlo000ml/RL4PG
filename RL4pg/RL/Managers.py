@@ -5,6 +5,7 @@ from .DeepQL.Q_estimators import DQNetwork, DuelingQNetwork
 from ..RL.DeepQL.Policy import BoltzmannPolicy, EpsilonGreedyPolicy
 from ..RL.ReplyBuffers import Basic_PrioritizedReplayBuffer, BasicReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
+from ..utils import N_1_secure_action_space
 
 
 
@@ -590,6 +591,23 @@ class MultiAgent_RL_Line_Manager:
         return torch.tensor(np.concatenate([obs.rho, obs.a_or, obs.a_ex, obs.topo_vect],axis=0), device=self.device, dtype=torch.float32)
 
 
+
+
+def playable_substations(env, n_1=True):
+    playable=[]
+    for i in range(env.n_sub):
+        if n_1:
+            acsp=N_1_secure_action_space(env,i)
+        else:
+            acsp=env.action_space.get_all_unitary_topologies_set(env.action_space, sub_id=i,add_alone_line=False)
+
+        if len(acsp)!=0:
+            playable.append(i)
+
+    return playable
+
+
+
 class MultiAgent_RL_Sub_Manager:
     """
 
@@ -645,11 +663,14 @@ class MultiAgent_RL_Sub_Manager:
         """
         assert policy_type in ["epsilon-greedy", "boltzmann"]
 
+        # action converters
+        self.playable = playable_substations(environment)
+
         self.act_space = environment.action_space
         self.rho_threshold = rho_threshold
         self.connection_flag = connect_disconnected_line
 
-        self.action_space_dim = environment.n_sub
+        self.action_space_dim = len(self.playable)
 
         self.device = device
 
@@ -708,6 +729,8 @@ class MultiAgent_RL_Sub_Manager:
         self.num_training_iters = num_training_iters
         self.batch_size = batch_size
 
+
+
         # counters
 
         self.training_iter = 0
@@ -754,12 +777,12 @@ class MultiAgent_RL_Sub_Manager:
     def exploit_agent(self, obs):
         obs = self.obs_to_torch(obs).unsqueeze(0)  # torch vector
         q_values = self.compute_main_q_values(obs, train=False)
-        return torch.argmax(q_values).item()
+        return self.playable[torch.argmax(q_values).item()]
 
     def play_agent(self, obs):
         obs = self.obs_to_torch(obs).unsqueeze(0)  # torch vector
         q_values = self.compute_main_q_values(obs, train=False)
-        return self.policy.select_action(q_values)
+        return self.playable[self.policy.select_action(q_values)]
 
     def store_experience(self, experience):
         self.buffer.add(experience=experience)
@@ -770,7 +793,7 @@ class MultiAgent_RL_Sub_Manager:
         """
         self.demonstration_buffer.add(demonstration)
 
-        self.buffer.add((demonstration[0], demonstration[1], demonstration[2][0], demonstration[3], demonstration[4]))
+        self.buffer.add((demonstration[0], self.playable.index(demonstration[1]), demonstration[2][0], demonstration[3], demonstration[4]))
 
     def _training_iteration(self):
         if self.buffer_type == "basic":

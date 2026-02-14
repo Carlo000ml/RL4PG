@@ -179,7 +179,7 @@ def main(settings):
 
     Sub_Agents = {
             i: DQN_Agent(
-                action_space=build_sub_action_space(env_train,i, action_type=hyperparameters["action type"]),
+                action_space=N_1_secure_action_space(env_train,i),
                 agent_id=i,
                 runs_name=runs_folder,
                 policy_kargs=policy_kargs,
@@ -227,7 +227,7 @@ def main(settings):
             print(f">>> Collecting demonstrations of {agents_kargs['demonstrations n']} steps")
             for i in tqdm(range(len(episode_studied))):
                 this_episode = EpisodeData.from_disk(*episode_studied[i])
-                experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager_sub(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_sub_graph, experiences=experiences, MA_exp=MA_exp)
+                experiences,MA_exp=collect_n_step_expert_experiences_RL_Manager_sub(this_episode,n=agents_kargs["demonstrations n"],action_converters=a_c,build_graph=build_torch_sub_graph, playable_subs=MultiAgent_Controll.playable, experiences=experiences, MA_exp=MA_exp)
             
                     # Create the directory if it doesn't exist
 
