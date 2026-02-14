@@ -27,7 +27,10 @@ class DQN_Agent:
                 rew_shape=True,
                 device='cpu'):
         assert policy_type in ["epsilon-greedy" , "boltzmann"]
-        if len(action_space)==0: return
+        if len(action_space)==0:
+            self.initialized=False
+            return
+        self.initialized=True
         self.action_space = action_space
         self.action_space_dim=len(action_space)
         self.agent_id = agent_id

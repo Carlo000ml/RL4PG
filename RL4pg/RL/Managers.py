@@ -791,9 +791,15 @@ class MultiAgent_RL_Sub_Manager:
         """
         just to remind how the sampling works: s-a-r-ns-d-nng-nd
         """
+        demonstration = (
+            demonstration[0],
+            self.playable.index(demonstration[1]),
+            *demonstration[2:]
+        )
+
         self.demonstration_buffer.add(demonstration)
 
-        self.buffer.add((demonstration[0], self.playable.index(demonstration[1]), demonstration[2][0], demonstration[3], demonstration[4]))
+        self.buffer.add((demonstration[0], demonstration[1], demonstration[2][0], demonstration[3], demonstration[4]))
 
     def _training_iteration(self):
         if self.buffer_type == "basic":

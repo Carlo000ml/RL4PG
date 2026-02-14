@@ -242,9 +242,10 @@ def main(settings):
 
         print(f">>> Storing demonstrations into agents")
         for i in range(env_train.n_sub):
-            for e in experiences[i]:
-                Sub_Agents[i].store_demonstration(e)
-                agents_counter.append(i)
+            if Sub_Agents[i].initialized:
+                for e in experiences[i]:
+                    Sub_Agents[i].store_demonstration(e)
+                    agents_counter.append(i)
 
         print(f">>> Storing demonstrations into manager")
         for e in MA_exp:
@@ -265,15 +266,17 @@ def main(settings):
         
         for k in range(agents_kargs["n training"]):
             for i in range(env_train.n_sub):
-                Sub_Agents[i].learn_demonstrations()
-                if  k % agents_kargs["target_update_freq"]==0:
-                    if agents_kargs["checkpoints"]:
-                        gp_manager.save_checkpoint(path=runs_folder)
-                    gp_manager.sync_target()
-                    for j in range(env_train.n_sub):
+                if Sub_Agents[i].initialized:
+                    Sub_Agents[i].learn_demonstrations()
+                    if  k % agents_kargs["target_update_freq"]==0:
                         if agents_kargs["checkpoints"]:
-                            Sub_Agents[j].save_estimator_checkpoint()
-                        Sub_Agents[j].estimator_manager.sync_target()
+                            gp_manager.save_checkpoint(path=runs_folder)
+                        gp_manager.sync_target()
+                        for j in range(env_train.n_sub):
+                            if Sub_Agents[j].initialized:
+                                if agents_kargs["checkpoints"]:
+                                    Sub_Agents[j].save_estimator_checkpoint()
+                                Sub_Agents[j].estimator_manager.sync_target()
     else: print(f"No demonstrations learning")
 
 
@@ -320,7 +323,8 @@ def main(settings):
             if episode % hyperparameters["episodes for train"] == 0:
                 MultiAgent_Controll.learn()
                 for i in range(env_train.n_sub):
-                    Sub_Agents[i].learn()
+                    if Sub_Agents[i].initialized:
+                        Sub_Agents[i].learn()
 
             if episode % agents_kargs["target_update_freq"]==0:
                 if agents_kargs["checkpoints"]:
@@ -335,9 +339,10 @@ def main(settings):
 
 
                 for i in range(env_train.n_sub):
-                    if agents_kargs["checkpoints"]:
-                        Sub_Agents[i].save_estimator_checkpoint()
-                    Sub_Agents[i].estimator_manager.sync_target()
+                    if Sub_Agents[i].initialized:
+                        if agents_kargs["checkpoints"]:
+                            Sub_Agents[i].save_estimator_checkpoint()
+                        Sub_Agents[i].estimator_manager.sync_target()
 
 
         if hyperparameters["validation"]:
@@ -389,11 +394,13 @@ def main(settings):
             test_step+=1   
         
 
-    for i in range(init_obs.n_sub):
-        Sub_Agents[i].close_writer()
+    for i in range(env_train.n_sub):
+        if Sub_Agents[i].initialized:
+            Sub_Agents[i].close_writer()
 
-    for i in range(init_obs.n_sub):
-        Sub_Agents[i].save()
+    for i in range(env_train.n_sub):
+        if Sub_Agents[i].initialized:
+            Sub_Agents[i].save()
 
     MultiAgent_Controll.save_checkpoint()
     with open(runs_folder+"/Manager/buffer", 'wb') as f:
