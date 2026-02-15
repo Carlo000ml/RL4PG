@@ -327,22 +327,23 @@ def main(settings):
                         Sub_Agents[i].learn()
 
             if episode % agents_kargs["target_update_freq"]==0:
+                print("syncing agents' networks...")
                 if agents_kargs["checkpoints"]:
                     gp_manager.save_checkpoint(path=runs_folder)
                 gp_manager.sync_target()
-            if episode% MA_manager_kargs["target_update_freq"]==0:
-                if agents_kargs["checkpoints"]:
-                    MultiAgent_Controll.save_checkpoint()
-                    MultiAgent_Controll.sync_target()
-
-
-
 
                 for i in range(env_train.n_sub):
                     if Sub_Agents[i].initialized:
                         if agents_kargs["checkpoints"]:
                             Sub_Agents[i].save_estimator_checkpoint()
                         Sub_Agents[i].estimator_manager.sync_target()
+
+            if episode% MA_manager_kargs["target_update_freq"]==0:
+                print("syncing manager's networks...")
+                if agents_kargs["checkpoints"]:
+                    MultiAgent_Controll.save_checkpoint()
+                    MultiAgent_Controll.sync_target()
+
 
 
         if hyperparameters["validation"]:

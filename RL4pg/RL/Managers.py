@@ -782,7 +782,8 @@ class MultiAgent_RL_Sub_Manager:
     def play_agent(self, obs):
         obs = self.obs_to_torch(obs).unsqueeze(0)  # torch vector
         q_values = self.compute_main_q_values(obs, train=False)
-        return self.playable[self.policy.select_action(q_values)]
+        ac=self.policy.select_action(q_values)
+        return self.playable[ac[0]], ac[1]
 
     def store_experience(self, experience):
         self.buffer.add(experience=experience)

@@ -4,7 +4,7 @@
         "epsilon" : 0.5 ,
         "min_epsilon": 0.1 ,
         "decay_mode": "half-life",
-        "half_life" : 75
+        "half_life" : 100
     },
 
     "Q_value_estimator_kargs": 
@@ -36,9 +36,9 @@
         "start_training_capacity": 250,
         "target_update_freq" : 300,   
         "buffer_type": "prioritized",
-        "num_training_iters": 130,
+        "num_training_iters": 150,
         "checkpoints": false,
-        "n training": 65,
+        "n training": 80,
         "rew_shape":true,
         "demonstrations n": 10
     },
@@ -66,7 +66,7 @@
         "policy_kargs": {
             "epsilon": 0.5,
             "min_epsilon":0.1,
-            "half_life":75
+            "half_life":80
                        },
         "replay_buffer_kargs": {
             "capacity":50000
@@ -76,8 +76,8 @@
         "num_training_iters" : 150,
         "batch_size": 64,
         "device":"cpu",
-        "n demonstrations training":20,
-        "target_update_freq": 1000,
+        "n demonstrations training":50,
+        "target_update_freq": 350,
         "lambda1":0.3,
         "lambda2": 0.3,
         "lambda3":0.2
@@ -99,7 +99,7 @@
         "hyperparameters": {
             "textual description":"RL manager",
             "learn demonstrations": true,
-            "number of episodes": 850,
+            "number of episodes": 1500,
             "episodes for train": 10,
             "exploit interval":200,
             "exploit tests":10,
