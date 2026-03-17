@@ -111,16 +111,28 @@ def main(settings):
     )
     env_train.seed(seed)
 
+    ############################
+    env_train.chronics_handler.set_chunk_size(100)
+    #############################
+
     gp_kargs["grid2openv"]= env_train  
 
     env_val = grid2op.make(
         f"{env_name}_val", backend=LightSimBackend(), reward_class=L2RPNReward, action_class=PlayableAction
     )
     env_val.seed(seed)
+    ############################
+    env_val.chronics_handler.set_chunk_size(100)
+    #############################
+
     env_test = grid2op.make(
         f"{env_name}_test", backend=LightSimBackend(), reward_class=L2RPNReward, action_class=PlayableAction
     )
     env_test.seed(seed)
+    ############################
+    env_test.chronics_handler.set_chunk_size(100)
+    #############################
+
 
     paths=env_val.chronics_handler.subpaths
     val_chr_ids = [int(os.path.basename(path)) for path in paths]
@@ -179,7 +191,7 @@ def main(settings):
 
     Sub_Agents = {
             i: DQN_Agent(
-                action_space=N_1_secure_action_space(env_train,i),
+                action_space=build_sub_action_space(env_train,i,action_type="set", N_1=agents_kargs["N_1"]),  #N_1_secure_action_space(env_train,i),
                 agent_id=i,
                 runs_name=runs_folder,
                 policy_kargs=policy_kargs,
@@ -220,7 +232,7 @@ def main(settings):
             print(f"Dataset does not exixts... Creating the dataset...")
             episode_studied = EpisodeData.list_episode(config["environment"]["Expert interaction path"])  # To be configured later for better handling of the path
 
-            a_c={i:Action_Converters_sub(env_train,i) for i in range(env_train.n_sub)}
+            a_c={i:Action_Converters_sub(env_train,i, agents_kargs["N_1"]) for i in range(env_train.n_sub)}
 
             experiences={i: [] for i in range(env_train.n_sub)}
             MA_exp=[]

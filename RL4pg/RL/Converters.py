@@ -106,9 +106,9 @@ class Action_Converters:
 
 
 class Action_Converters_sub:
-    def __init__(self,env, sub_id):
+    def __init__(self,env, sub_id, N_1):
         self.sub_id=sub_id
-        action_space=build_sub_action_space(env,sub_id=sub_id)
+        action_space=build_sub_action_space(env,sub_id=sub_id, action_type="set", N_1=N_1)
         self.action_space=[a.as_dict() for a in action_space]
 
 

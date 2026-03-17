@@ -40,7 +40,8 @@
         "checkpoints": false,
         "n training": 80,
         "rew_shape":true,
-        "demonstrations n": 10
+        "demonstrations n": 10,
+        "N_1": false
     },
 
     "MA_manager_kargs" : 

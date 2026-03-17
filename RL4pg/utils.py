@@ -255,7 +255,10 @@ def build_line_extremities_sub_indexes(obs):
     return torch.tensor(np.vstack([obs.line_or_to_subid, obs.line_ex_to_subid]) , dtype=torch.long ).t().contiguous()
 
 
-def build_sub_action_space(env, sub_id, action_type="set"):
+def build_sub_action_space(env, sub_id, action_type="set", N_1=False):
+    if N_1:
+        return N_1_secure_action_space(env,sub_id)
+
     return env.action_space.get_all_unitary_topologies_set(env.action_space, sub_id=sub_id,add_alone_line=False)+[env.action_space({})]
 
 
@@ -546,6 +549,8 @@ def check_at_least_two_lines(action, sub_id):
     bus_connection=np.array(action.as_serializable_dict()['set_bus']['lines_or_id']+action.as_serializable_dict()['set_bus']['lines_ex_id'])[:,1]
 
     return np.sum(bus_connection==1)>=2 or np.sum(bus_connection==2)>=2
+
+
 
 
 
