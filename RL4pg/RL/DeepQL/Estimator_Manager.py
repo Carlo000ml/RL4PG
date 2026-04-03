@@ -290,6 +290,7 @@ class Estimator_Manager:
 
             ##### how the batch reward is returned here? what type and what shape?  A tensor of shape (batch_size, n)
             actions=batch_action_t
+
             q_values=self.compute_main_q_values(batch_state_t, train=True)
             batch_size,n_actions=q_values.shape  # number of rows , number of columns of the q_values
             q_values=torch.gather(q_values, 1, actions).view(-1)

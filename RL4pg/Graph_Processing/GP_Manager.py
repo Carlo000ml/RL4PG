@@ -48,15 +48,17 @@ class GP_Manager:
             with torch.no_grad():
                 out=self.target_gp.forward(graph.x,graph.edge_index).detach()
 
-            return out
+            return out.permute((1,0,2)).reshape((out.shape[1],-1))
 
         else:
              if train:
                 self.main_gp.train()
-                return self.main_gp.forward(graph.x,graph.edge_index)
+                x=self.main_gp.forward(graph.x,graph.edge_index)
+                return x.permute((1,0,2)).reshape((x.shape[1],-1))
              else:
                 self.main_gp.eval()
-                return self.main_gp.forward(graph.x,graph.edge_index)
+                x=self.main_gp.forward(graph.x,graph.edge_index)
+                return x.permute((1,0,2)).reshape((x.shape[1],-1))
 
     
     def process_graph(self,graph, train, target):
@@ -71,10 +73,12 @@ class GP_Manager:
         else:
              if train:
                 self.main_gp.train()
-                return self.main_gp.process(graph)
+                x=self.main_gp.process(graph)
+                return x.reshape( -1)
              else:
                 self.main_gp.eval()
-                return self.main_gp.process(graph)
+                x=self.main_gp.process(graph)
+                return x.reshape( -1)
              
 
     def sync_target(self):

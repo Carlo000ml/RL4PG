@@ -95,8 +95,8 @@ class DQN_Agent:
 
 
     def exploit(self,graph, current_obs=None):
-        # processing the graph using the main graph nn, in evaluation mode, and selecting the line conrresponding to the agent
-        obs=self.gp_manager.process_graph(graph , train=False, target=False)[self.agent_id].unsqueeze(0)
+        # processing the graph using the main graph nn, in evaluation mode, and selecting the line corresponding to the agent
+        obs=self.gp_manager.process_graph(graph , train=False, target=False).unsqueeze(0)
         #computing q values using the main network in evaluation mode
         q_values=self.estimator_manager.compute_main_q_values(obs, train=False)
 
@@ -114,7 +114,7 @@ class DQN_Agent:
     
 
     def act(self,graph, current_obs=None):
-        obs=self.gp_manager.process_graph(graph , train=False, target=False)[self.agent_id].unsqueeze(0)
+        obs=self.gp_manager.process_graph(graph , train=False, target=False).unsqueeze(0)
         q_values=self.estimator_manager.compute_main_q_values(obs, train=False)
         # using the policy and action masking
         fake_indexes=action_masking(self.action_space,current_obs).to(self.device)
@@ -130,8 +130,8 @@ class DQN_Agent:
         # sample a batch
         state, action, reward, next_state, done , _, _ = self.buffer.sample(self.gp_manager.batch_size,way="g-a-r-ng", demonstrations=False)
         # process in batch using the main and the target gp and estimators
-        main_obs=self.gp_manager.process_batch(state, train=True, target=False)[self.agent_id]
-        target_obs=self.gp_manager.process_batch(next_state, train=False, target=True)[self.agent_id]   # useless the train=False but you never know
+        main_obs=self.gp_manager.process_batch(state, train=True, target=False)#[self.agent_id]
+        target_obs=self.gp_manager.process_batch(next_state, train=False, target=True)#[self.agent_id]   # useless the train=False but you never know
 
         # compute loss
         if self.rew_shape:
@@ -152,9 +152,9 @@ class DQN_Agent:
         # sample a batch
         batch_state_t, batch_action_t, batch_rewards_t_n, batched_states_t_1, batch_done_t,batch_state_t_n, batch_done_t_n = self.demonstration_buffer.sample(self.gp_manager.batch_size, way="g-a-r-ng-d", demonstrations=True)
         # process in batch using the main and the target gp and estimators
-        main_obs=self.gp_manager.process_batch(batch_state_t, train=True, target=False)[self.agent_id]
-        target_obs_t_1=self.gp_manager.process_batch(batched_states_t_1, train=False, target=True)[self.agent_id]   # useless the train=False but you never know
-        target_obs_t_n=self.gp_manager.process_batch(batch_state_t_n, train=False, target=True)[self.agent_id]   # useless the train=False but you never know
+        main_obs=self.gp_manager.process_batch(batch_state_t, train=True, target=False)#[self.agent_id]
+        target_obs_t_1=self.gp_manager.process_batch(batched_states_t_1, train=False, target=True)#[self.agent_id]   # useless the train=False but you never know
+        target_obs_t_n=self.gp_manager.process_batch(batch_state_t_n, train=False, target=True)#[self.agent_id]   # useless the train=False but you never know
 
 
         # compute loss
@@ -221,8 +221,8 @@ class DQN_Agent:
 
         state, action, reward, next_state, done, _, _ = batch
         # process in batch using the main and the target gp and estimators
-        main_obs=self.gp_manager.process_batch(state, train=True, target=False)[self.agent_id]
-        target_obs=self.gp_manager.process_batch(next_state, train=False, target=True)[self.agent_id]   # useless the train=False but you never know
+        main_obs=self.gp_manager.process_batch(state, train=True, target=False)#[self.agent_id]
+        target_obs=self.gp_manager.process_batch(next_state, train=False, target=True)#[self.agent_id]   # useless the train=False but you never know
 
         # compute loss
         if self.rew_shape:
@@ -250,9 +250,9 @@ class DQN_Agent:
 
         batch_state_t, batch_action_t, batch_rewards_t_n, batched_states_t_1, batch_done_t,batch_state_t_n, batch_done_t_n  = batch
         # process in batch using the main and the target gp and estimators
-        main_obs=self.gp_manager.process_batch(batch_state_t, train=True, target=False)[self.agent_id]
-        target_obs_t_1=self.gp_manager.process_batch(batched_states_t_1, train=False, target=True)[self.agent_id]   # useless the train=False but you never know
-        target_obs_t_n=self.gp_manager.process_batch(batch_state_t_n, train=False, target=True)[self.agent_id]   #  # useless the train=False but you never know
+        main_obs=self.gp_manager.process_batch(batch_state_t, train=True, target=False)#[self.agent_id]
+        target_obs_t_1=self.gp_manager.process_batch(batched_states_t_1, train=False, target=True)#[self.agent_id]   # useless the train=False but you never know
+        target_obs_t_n=self.gp_manager.process_batch(batch_state_t_n, train=False, target=True)#[self.agent_id]   #  # useless the train=False but you never know
         # compute loss
         loss, td_error =self.estimator_manager.compute_demonstration_loss_TD_error(batch_state_t=main_obs,
                                                                                 batch_action_t=batch_action_t,

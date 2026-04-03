@@ -13,10 +13,10 @@
         "weight_decay":5e-7,
         "use_double": true,
         "Q_estimator_params" :{
-                            "input_dim":123,
-                            "hidden_layers_shared_structure":[64],
-                            "structure_value_stream":[64],
-                            "structure_advantage_stream":[64,32],
+                            "input_dim":1722,
+                            "hidden_layers_shared_structure":[512,256],
+                            "structure_value_stream":[128],
+                            "structure_advantage_stream":[128,64],
                             "dropout" : 0.1,
                             "use_batch_norm":true
                             },
