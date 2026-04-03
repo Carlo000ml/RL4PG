@@ -4,6 +4,7 @@ import random
 from .DeepQL.Q_estimators import DQNetwork, DuelingQNetwork
 from ..RL.DeepQL.Policy import BoltzmannPolicy, EpsilonGreedyPolicy
 from ..RL.ReplyBuffers import Basic_PrioritizedReplayBuffer, BasicReplayBuffer
+from RL4pg.DeepL.Optimization.optimizers import build_optimizer, build_parameter_groups
 from torch.utils.tensorboard import SummaryWriter
 from ..utils import N_1_secure_action_space
 
@@ -743,8 +744,18 @@ class MultiAgent_RL_Sub_Manager:
             self.target_net.eval()
 
         # optimizer
-        self.optimizer = torch.optim.Adam(
-            self.main_net.parameters(), lr=lr, weight_decay=weight_decay
+
+        parameters_groups = build_parameter_groups(
+            self.main_net.parameters(),
+            lr=lr,
+            weight_decay=weight_decay,
+        )
+        self.optimizer=build_optimizer(
+            params=parameters_groups[1],
+            config={
+                "name": "adamw",
+                "use_lookahead": True,
+            },
         )
         self.gradient_clipping = gradient_clipping
         self.tau_soft_updates = tau_soft_updates

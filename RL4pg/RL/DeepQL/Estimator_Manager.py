@@ -1,5 +1,8 @@
 import torch
 from RL4pg.RL.DeepQL.Q_estimators import DQNetwork, DuelingQNetwork  # type: ignore
+from RL4pg.DeepL.Optimization.optimizers import build_optimizer, build_parameter_groups
+from RL4pg.DeepL.Optimization.warmup import WarmupScheduler
+from pytorch_scheduler.scheduler.polynomial import PolynomialScheduler  #type: ignore
 import torch.nn as nn
 
 
@@ -66,9 +69,22 @@ class Estimator_Manager:
             self.target_net.eval()
 
         # optimizer
-        self.optimizer = torch.optim.Adam(
-            self.main_net.parameters(), lr=lr, weight_decay=weight_decay
+        #self.optimizer = torch.optim.Adam(
+        #    self.main_net.parameters(), lr=lr, weight_decay=weight_decay
+        #)
+        parameters_groups = build_parameter_groups(
+            self.main_net.parameters(),
+            lr=lr,
+            weight_decay=weight_decay,
         )
+        self.optimizer=build_optimizer(
+            params=parameters_groups[1],
+            config={
+                "name": "adamw",
+                "use_lookahead": True,
+            },
+        )
+
 
         # loss
         if loss_type == "MSE":
