@@ -746,7 +746,7 @@ class MultiAgent_RL_Sub_Manager:
         # optimizer
 
         parameters_groups = build_parameter_groups(
-            self.main_net.parameters(),
+            self.main_net,
             lr=lr,
             weight_decay=weight_decay,
         )

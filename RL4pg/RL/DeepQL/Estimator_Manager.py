@@ -73,7 +73,7 @@ class Estimator_Manager:
         #    self.main_net.parameters(), lr=lr, weight_decay=weight_decay
         #)
         parameters_groups = build_parameter_groups(
-            self.main_net.parameters(),
+            self.main_net,
             lr=lr,
             weight_decay=weight_decay,
         )
