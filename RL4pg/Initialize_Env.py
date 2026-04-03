@@ -15,17 +15,27 @@ def initialize_env(env_name):
         None
     """
     # Construct paths for the environments
-    base_path = "C:\\Users\\carlo\\data_grid2op\\"+env_name   # os.path.join(os.getcwd(),"data_grid2op", env_name)
-    print("the base path is - " , base_path , " - in case it is not the location of data_grid2op, change the file 'Initialize_Env.py' when computing the base_path " )
+    base_path = (
+        "C:\\Users\\carlo\\data_grid2op\\" + env_name
+    )  # os.path.join(os.getcwd(),"data_grid2op", env_name)
+    print(
+        "the base path is - ",
+        base_path,
+        " - in case it is not the location of data_grid2op, change the file 'Initialize_Env.py' when computing the base_path ",
+    )
     train_env_path = base_path + "_train"
     val_env_path = base_path + "_val"
     test_env_path = base_path + "_test"
 
     # Check if all environments exist
-    all_exist = all(os.path.exists(path) for path in [train_env_path, val_env_path, test_env_path])
+    all_exist = all(
+        os.path.exists(path) for path in [train_env_path, val_env_path, test_env_path]
+    )
 
     if all_exist:
-        print(f"All environments exist: {train_env_path}, {val_env_path}, {test_env_path}")
+        print(
+            f"All environments exist: {train_env_path}, {val_env_path}, {test_env_path}"
+        )
         print("Skipping initialization.")
         return
 
@@ -45,8 +55,12 @@ def initialize_env(env_name):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run a script for a specified environment.")
-    parser.add_argument("env_name", type=str, help="The name of the environment to process.")
+    parser = argparse.ArgumentParser(
+        description="Run a script for a specified environment."
+    )
+    parser.add_argument(
+        "env_name", type=str, help="The name of the environment to process."
+    )
     args = parser.parse_args()
 
     initialize_env(args.env_name)

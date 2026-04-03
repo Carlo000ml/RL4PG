@@ -61,7 +61,7 @@ RL4PG/
 │
 ├── README.md                    # This file
 │
-└── requirements.txt                  
+└── requirements.txt
 
 ```
 
