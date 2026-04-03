@@ -2,7 +2,10 @@ import grid2op
 import argparse
 import os
 import shutil
+from dotenv import load_dotenv
+from pathlib import Path
 
+load_dotenv()
 
 def initialize_env(env_name):
     """
@@ -15,21 +18,21 @@ def initialize_env(env_name):
         None
     """
     # Construct paths for the environments
-    base_path = (
-        "C:\\Users\\carlo\\data_grid2op\\" + env_name
-    )  # os.path.join(os.getcwd(),"data_grid2op", env_name)
+    base_path = Path(
+        os.getenv("DATA_ROOT"))
+      # os.path.join(os.getcwd(),"data_grid2op", env_name)
     print(
         "the base path is - ",
         base_path,
         " - in case it is not the location of data_grid2op, change the file 'Initialize_Env.py' when computing the base_path ",
     )
-    train_env_path = base_path + "_train"
-    val_env_path = base_path + "_val"
-    test_env_path = base_path + "_test"
+    train_env_path = base_path  /f"{env_name}_train"
+    val_env_path = base_path / f"{env_name}_val"
+    test_env_path = base_path / f"{env_name}_test"
 
     # Check if all environments exist
     all_exist = all(
-        os.path.exists(path) for path in [train_env_path, val_env_path, test_env_path]
+        path.exists() for path in [train_env_path, val_env_path, test_env_path]
     )
 
     if all_exist:
@@ -42,7 +45,7 @@ def initialize_env(env_name):
     # If not all environments exist, delete any existing ones
     print("Some environments are missing. Reinitializing all environments...")
     for path in [train_env_path, val_env_path, test_env_path]:
-        if os.path.exists(path):
+        if path.exists():
             print(f"Deleting existing environment: {path}")
             shutil.rmtree(path)
 
