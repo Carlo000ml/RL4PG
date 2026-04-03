@@ -27,8 +27,10 @@ class Estimator_Manager:
         gradient_clipping=torch.inf,
         soft_updates=False,
         tau_soft_updates=0.5,
+        look_ahead=False,
         eta=None,
         writer=None,
+
     ):
         self.loss_type = loss_type
         self.lr = lr
@@ -49,6 +51,7 @@ class Estimator_Manager:
         self.lambda1 = lambda1
         self.lambda2 = lambda2
         self.lambda3 = lambda3
+        self.look_ahead=look_ahead
         if eta:
             self.eta = eta
         else:
@@ -81,7 +84,7 @@ class Estimator_Manager:
             params=parameters_groups[1],
             config={
                 "name": "adamw",
-                "use_lookahead": True,
+                "use_lookahead": look_ahead,
             },
         )
 

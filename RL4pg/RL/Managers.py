@@ -703,6 +703,7 @@ class MultiAgent_RL_Sub_Manager:
         lambda1=0.5,
         lambda2=0.1,
         lambda3=0.1,
+        look_ahead= False,
         device="cpu",
         **kwargs
     ):
@@ -754,7 +755,7 @@ class MultiAgent_RL_Sub_Manager:
             params=parameters_groups[1],
             config={
                 "name": "adamw",
-                "use_lookahead": True,
+                "use_lookahead": look_ahead,
             },
         )
         self.gradient_clipping = gradient_clipping

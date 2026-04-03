@@ -26,7 +26,8 @@
         "gradient_clipping":3,
         "soft_updates":true,
         "tau_soft_updates":0.01,
-        "eta": 1
+        "eta": 1,
+        "look_ahead": false
     },
 
 
@@ -82,7 +83,8 @@
         "target_update_freq": 40,
         "lambda1":0.3,
         "lambda2": 0.3,
-        "lambda3":0.2
+        "lambda3":0.2,
+        "look_ahead": false
 
 
 
