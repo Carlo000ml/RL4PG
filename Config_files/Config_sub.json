@@ -41,7 +41,8 @@
         "n training": 80,
         "rew_shape":true,
         "demonstrations n": 10,
-        "N_1": false
+        "N_1": false,
+        "bad_action_masking": false
     },
 
     "MA_manager_kargs" :
@@ -52,7 +53,7 @@
                         "input_dim":117,
                         "hidden_layers_shared_structure":[128],
                         "structure_value_stream":[128],
-                        "structure_advantage_stream":[128,32],
+                        "structure_advantage_stream":[128,64],
                         "dropout" : 0.1,
                         "use_batch_norm":true
                         },

@@ -223,6 +223,7 @@ def main(settings):
             start_training_capacity=agents_kargs["start_training_capacity"],
             num_training_iters=agents_kargs["num_training_iters"],
             rew_shape=agents_kargs["rew_shape"],
+            bad_action_masking=agents_kargs["bad_action_masking"],
             device=device,
         )
         for i in range(init_obs.n_sub)
