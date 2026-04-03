@@ -2,7 +2,7 @@ import torch.nn as nn
 from ...DeepL.Models import CustomRegressor
 
 
-class DQNetwork:
+class DQNetwork(nn.Module):
     def __new__(
         cls,
         input_dim,
